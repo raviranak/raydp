@@ -27,7 +27,7 @@ from setuptools import find_packages, setup, Command
 
 build_mode = os.getenv("RAYDP_BUILD_MODE", "")
 package_name = os.getenv("RAYDP_PACKAGE_NAME", "raydp")
-BASE_VERSION = "1.7.0"
+BASE_VERSION = "1.7.2"
 if build_mode == "nightly":
     VERSION = BASE_VERSION + datetime.today().strftime("b%Y%m%d.dev0")
 # for legacy raydp_nightly package
@@ -95,14 +95,14 @@ try:
     copy2(SCRIPT_PATH, SCRIPT_TARGET)
 
     install_requires = [
-        "numpy",
-        "pandas >= 1.1.4",
-        "psutil",
-        "pyarrow >= 4.0.1",
-        "ray >= 2.1.0",
-        "pyspark >= 3.1.1, <= 3.4.1",
-        "netifaces",
-        "protobuf > 3.19.5, <= 3.20.3"
+        # "numpy",
+        # "pandas >= 1.1.4",
+        # "psutil",
+        # "pyarrow >= 4.0.1",
+        # "ray >= 2.1.0",
+        # "pyspark >= 3.1.1, <= 3.4.1",
+        # "netifaces",
+        # "protobuf > 3.19.5, <= 3.20.3"
     ]
 
     _packages = find_packages()
