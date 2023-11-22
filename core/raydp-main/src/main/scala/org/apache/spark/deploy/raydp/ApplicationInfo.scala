@@ -99,15 +99,15 @@ private[spark] class ApplicationInfo(
     addressToExecutorId(address) = executorId
   }
 
-  def kill(address: RpcAddress): Boolean = {
+  def kill(address: RpcAddress, shutdown: Boolean): Boolean = {
     if (addressToExecutorId.contains(address)) {
-      kill(addressToExecutorId(address))
+      kill(addressToExecutorId(address), shutdown)
     } else {
       false
     }
   }
 
-  def kill(executorId: String): Boolean = {
+  def kill(executorId: String, shutdownActor: Boolean): Boolean = {
     if (executors.contains(executorId)) {
       val exec = executors(executorId)
       if (exec.registered) {
@@ -116,13 +116,15 @@ private[spark] class ApplicationInfo(
       removedExecutors += executors(executorId)
       executors -= executorId
       coresGranted -= exec.cores
-      // Previously we use Ray.kill(true) here, which prevents executors from restarting.
-      // But we want executors died accidentally to restart, so we use Ray.exitActor now.
-      // Because if ray actor is already dead, it probably died from node failure,
-      // and this method won't be executed, so it can restart.
-      // Otherwise, it exits intentionally here and won't restart.
-      RayExecutorUtils.exitExecutor(executorIdToHandler(executorId))
-      executorIdToHandler -= executorId
+      if(shutdownActor){
+        // Previously we use Ray.kill(true) here, which prevents executors from restarting.
+        // But we want executors died accidentally to restart, so we use Ray.exitActor now.
+        // Because if ray actor is already dead, it probably died from node failure,
+        // and this method won't be executed, so it can restart.
+        // Otherwise, it exits intentionally here and won't restart.
+        RayExecutorUtils.exitExecutor(executorIdToHandler(executorId))
+        executorIdToHandler -= executorId
+      }
       true
     } else {
       false
