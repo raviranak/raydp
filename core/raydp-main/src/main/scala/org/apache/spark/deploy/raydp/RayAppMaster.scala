@@ -21,17 +21,14 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.{Date, Locale}
 import javax.xml.bind.DatatypeConverter
-
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashMap
-
 import io.ray.api.{ActorHandle, PlacementGroups, Ray}
 import io.ray.api.id.PlacementGroupId
 import io.ray.api.placementgroup.PlacementGroup
 import io.ray.runtime.config.RayConfig
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
-
 import org.apache.spark.{RayDPException, SecurityManager, SparkConf}
 import org.apache.spark.executor.RayDPExecutor
 import org.apache.spark.internal.Logging
@@ -269,7 +266,14 @@ class RayAppMaster(host: String,
         s"${appInfo.desc.resourceReqsPerExecutor
           .map{ case (name, amount) => s"${name}: ${amount}"}.mkString(", ")} }..")
       // TODO: Support generic fractional logical resources using prefix spark.ray.actor.resource.*
-
+      //Check for executor actor alive is max executor count and skip this step
+      val dynamicAllocationEnabled = conf.getBoolean("spark.dynamicAllocation.enabled",false)
+      if (dynamicAllocationEnabled) {
+        val maxExecutor = conf.getInt("spark.dynamicAllocation.maxExecutors", 0)
+        if (restartedExecutors.size >= maxExecutor) {
+          return
+        }
+      }
       val handler = RayExecutorUtils.createExecutorActor(
         executorId, getAppMasterEndpointUrl(),
         rayActorCPU,
