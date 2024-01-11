@@ -269,6 +269,13 @@ class RayAppMaster(host: String,
         s"${appInfo.desc.resourceReqsPerExecutor
           .map{ case (name, amount) => s"${name}: ${amount}"}.mkString(", ")} }..")
       // TODO: Support generic fractional logical resources using prefix spark.ray.actor.resource.*
+      val dynamicAllocationEnabled = conf.getBoolean("spark.dynamicAllocation.enabled",false)
+      if (dynamicAllocationEnabled) {
+        val maxExecutor = conf.getInt("spark.dynamicAllocation.maxExecutors", 0)
+        if (restartedExecutors.size >= maxExecutor) {
+          return
+        }
+      }
 
       val handler = RayExecutorUtils.createExecutorActor(
         executorId, getAppMasterEndpointUrl(),
