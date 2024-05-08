@@ -211,6 +211,7 @@ class RayAppMaster(host: String,
 
     override def onDisconnected(remoteAddress: RpcAddress): Unit = {
       appInfo.kill(remoteAddress, shutdownActor = false)
+      requestNewExecutor()
     }
 
     override def onStop(): Unit = {
